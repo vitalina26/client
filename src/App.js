@@ -1,25 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import NewApartment from './components/NewApartment';
+import React,{useEffect,useState} from 'react';
+import Apartments from './components/Apartments';
+import './App.css'
+import api from "./api";
+const App = () => {
+  const [apartments, setApartments] = useState([]);
+  
 
-function App() {
+  useEffect(() => {
+    try {
+      const fetchApartments = async () => {
+        let response = await api.getApartments();
+        setApartments(response.data.data);
+        console.log(response.data.data);
+     };
+     fetchApartments();
+    } catch (err) {
+      console.log(err);
+    }
+  },[])
+  const deleteApartmentHandler = async (id) => {
+    try {
+      await api.deleteApartmentById(`${id}`);
+      setApartments(
+         apartments.filter((apartment) => {
+            return apartment.id !== id;
+         })
+      );
+    } catch (err) {
+      console.log(err);
+    }
+ 
+  };
+  const addApartmentHandler = async (body) => {
+    try {
+      let response = await api.createApartment(body);
+      setApartments((apartments) => [response.data, ...apartments]);
+      console.log(response.data);
+    } catch (err) {
+      
+    }
+    
+ };
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+     <div>
+      <h1>Apartments Marketplace</h1>
+      <NewApartment onAddApartmentHandler={addApartmentHandler} />
+      <h2>Availble Apartments({apartments.length})</h2>
+      <Apartments apartments={apartments} onDeleteApartmentHandler = {deleteApartmentHandler} />
+      </div>
+   
   );
-}
-
+};
 export default App;
